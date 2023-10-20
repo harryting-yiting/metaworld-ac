@@ -137,6 +137,7 @@ class Workspace:
                                 self.global_frame)
         self.eval(num_eval_episodes=100)
         
+        ## Yiting: Uncomment to train AC
         # episode_step, episode_reward = 0, 0
         # time_step = self.train_env.reset()
         # self.replay_storage.add(time_step)
