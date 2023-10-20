@@ -33,7 +33,7 @@ class MetaWorldEnv:
       self._step = None
       
       self.size = size
-      self.viewer = mujoco.MjRenderContextOffscreen(self._env.data, -1)
+      self.viewer = self._env.mujoco_renderer
       
       # self.set_viewer_params(render_params[name])
       self.set_viewer_params(render_params)
@@ -51,15 +51,12 @@ class MetaWorldEnv:
         return gym.spaces.Dict(spaces)
  
   def set_viewer_params(self, params):
-      self.viewer.cam.elevation = params["elevation"]
-      self.viewer.cam.azimuth = params["azimuth"]
-      self.viewer.cam.distance = params["distance"]
-      self.viewer.cam.lookat[:] = params["lookat"][:]
+      self.viewer.default_camera_config = params
 
   def step(self, action):
     reward = 0.0
     for _ in range(self.action_repeat):
-        state, rew, done, info = self._env.step(action)
+        state, rew, _, done, info = self._env.step(action)
         reward += rew
         if done:
             break
@@ -76,7 +73,7 @@ class MetaWorldEnv:
     self._env.hand_init_pos = self.hand_init_pose + 0.03 * np.random.normal(size = 3)
     _ = self._env.reset()
     for i in range(10):
-        state,_,_,_ = self._env.step(np.zeros(self.action_space.shape))
+        state,_,_,_,_ = self._env.step(np.zeros(self.action_space.shape))
     img = self.render(mode='rgb_array', width = self.size[0], height = self.size[1])
     img = self.render(mode='rgb_array', width = self.size[0], height = self.size[1])
     obs = {'image':img}
@@ -84,12 +81,12 @@ class MetaWorldEnv:
     return obs
   
   def render(self, mode ='rgb_array', width = 84, height = 84):
-      self.viewer.render(width=width, height=width)
-      img = self.viewer.read_pixels(width, height, depth=False)
+      self._env.render_mode = mode
+      self._env.width = width
+      self._env.height = height
+      img = self._env.render()
       img = img[::-1]
       return img
-
-
 class GymWrapper:
 
   def __init__(self, env, obs_key='image', act_key='action'):

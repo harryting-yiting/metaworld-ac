@@ -233,11 +233,16 @@ class PixelACAgent:
         # with cross entropy loss function( negtive log liklyhood)
         # zero grad
         # update
-        
-        loss = F.nll_loss(self.actor(obs), action)
-        loss.backward()
+        print(obs.shape)
+        m = self.act(obs, False)
+        loss = torch.nn.MSELoss()
+        loss_out = loss(m, action)
+        loss_out.backward()
         self.actor_opt.step()
-        self.actor.zero_grad()
+       
+
+        self.encoder_opt.step()
+        
         
         # log info
         metrics['loss'] = loss
